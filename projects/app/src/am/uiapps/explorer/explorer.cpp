@@ -131,8 +131,8 @@ rageam::ui::Explorer::~Explorer()
 void rageam::ui::Explorer::OnStart()
 {
 	// Default selection
-	m_TreeView.SetSelectedEntry(m_QuickAccess);
-	m_FolderView.SetRootEntry(m_QuickAccess);
+	m_TreeView.SetSelectedEntry(m_ThisPC);
+	m_FolderView.SetRootEntry(m_ThisPC);
 }
 
 void rageam::ui::Explorer::OnRender()
