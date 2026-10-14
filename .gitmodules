@@ -1,4 +1,0 @@
-[submodule "projects/app/vendor/slgui"]
-	path = projects/app/vendor/slgui
-	url = https://github.com/ranstar74/slgui.git
-	branch = slgui

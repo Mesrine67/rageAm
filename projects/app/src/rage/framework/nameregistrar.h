@@ -190,7 +190,7 @@ namespace rage
 			m_BucketToNode = new s32[m_BucketCount];
 
 			// Allocate without invoking default TValue constructor for each node
-			size_t nodePoolAllocSize = static_cast<size_t>(m_BucketCount) * sizeof Node;
+			size_t nodePoolAllocSize = static_cast<size_t>(m_BucketCount) * sizeof(Node);
 			m_NodePool = static_cast<Node*>(operator new(nodePoolAllocSize));
 			memset(m_NodePool, 0, nodePoolAllocSize);  // NOLINT(bugprone-undefined-memory-manipulation)
 

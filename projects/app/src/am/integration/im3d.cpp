@@ -155,7 +155,6 @@ bool Im3D::Begin(const ImVec3V& startPos, bool background)
 
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, background ? bgColor : 0);
 	ImGui::PushStyleColor(ImGuiCol_Border, 0);
-	ImGui::PushStyleColor(ImGuiCol_WindowShadow, 0);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
 	ImGui::Begin("Im3D", 0, flags);
@@ -166,7 +165,7 @@ void Im3D::End()
 {
 	ImGui::End();
 	ImGui::PopStyleVar();
-	ImGui::PopStyleColor(3); // WindowBg, Border, WindowShadow
+	ImGui::PopStyleColor(2); // WindowBg, Border
 }
 
 bool Im3D::IsViewportHovered()

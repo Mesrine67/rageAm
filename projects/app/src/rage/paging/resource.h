@@ -59,8 +59,18 @@ namespace rage
 			if (!obj)
 				return;
 
-			Fixup(obj);
-			Place(obj);
+			const u64 oldAddress = reinterpret_cast<u64>(obj);
+			obj = reinterpret_cast<T*>(oldAddress + GetFixup(oldAddress));
+
+			constexpr bool hasPlaceFn = requires(T t, datResource rsc)
+			{
+				T::Place(rsc, &t);
+			};
+
+			if constexpr (hasPlaceFn)
+				T::Place(*this, obj);
+			else
+				::new (static_cast<void*>(obj)) T(*this);
 		}
 
 		// Calls T::Place function if defined, otherwise ::PlaceDefault.
@@ -108,14 +118,16 @@ namespace rage
 				T::Place(rsc, &t);
 			};
 
-			if constexpr (hasResourceConstructor || hasPlaceFn)
-			{
-				FixupAndPlace(obj);
-			}
-			else
-			{
-				Fixup(obj);
-			}
+			if (!obj)
+				return;
+
+			const u64 oldAddress = reinterpret_cast<u64>(obj);
+			obj = reinterpret_cast<T*>(oldAddress + GetFixup(oldAddress));
+
+			if constexpr (hasPlaceFn)
+				T::Place(*this, obj);
+			else if constexpr (hasResourceConstructor)
+				::new (static_cast<void*>(obj)) T(*this);
 		}
 	};
 

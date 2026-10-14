@@ -4,6 +4,30 @@
 #include "imglue.h"
 #include "font_icons/icons_awesome.h"
 
+namespace
+{
+	void RenderHorizontalGradient(const ImRect& rect, const ImGradient& gradient)
+	{
+		const ImU32 leftColor = ImGui::GetColorU32(gradient.Start);
+		const ImU32 rightColor = ImGui::GetColorU32(gradient.End);
+		ImGui::GetWindowDrawList()->AddRectFilledMultiColor(
+			rect.Min, rect.Max, leftColor, rightColor, rightColor, leftColor);
+	}
+
+	void DrawSoftShadow(const ImRect& rect)
+	{
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		const float rounding = ImGui::GetStyle().FrameRounding;
+		for (int ring = 5; ring >= 1; --ring)
+		{
+			const float spread = static_cast<float>(ring) * 1.5f;
+			const ImU32 color = IM_COL32(0, 0, 0, (6 - ring) * 4);
+			drawList->AddRect(rect.Min - ImVec2(spread, spread), rect.Max + ImVec2(spread, spread),
+				color, rounding + spread, ImDrawFlags_None, 1.0f);
+		}
+	}
+}
+
 void SlGui::BeginHorizontal()
 {
 	ImGui::GetCurrentWindow()->DC.LayoutType = ImGuiLayoutType_Horizontal;
@@ -265,7 +289,7 @@ bool SlGui::TreeNode(ConstString text, bool& selected, bool& toggled, ImTextureI
 		window->DrawList->AddRectFilled(bb.Min, bb.Max, backgroundCol);
 		window->DrawList->AddRect(bb.Min, bb.Max, borderCol);
 	}
-	ImGui::RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin);
+	ImGui::RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_Compact);
 
 	// Arrow, we add slow fading in/out just like in windows explorer
 	if (canOpen)
@@ -487,7 +511,7 @@ bool SlGui::RenamingSelectable(SlRenamingSelectableState& state, SlGuiRenamingSe
 			ImGui::ColumnsBeginBackground();
 
 		// We don't need navigation highlight because we consider navigation as selection
-		// RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
+		// RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_Compact | ImGuiNavHighlightFlags_NoRounding);
 
 		if (flags & ImGuiRenamingSelectableFlags_Outline)
 		{
@@ -930,7 +954,7 @@ void SlGui::TableHeader(const char* label)
 		//ImGui::PopStyleVar();
 	}
 
-	ImGui::RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
+	ImGui::RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_Compact | ImGuiNavHighlightFlags_NoRounding);
 	if (held)
 		table->HeldHeaderColumn = (ImGuiTableColumnIdx)column_n;
 	window->DC.CursorPos.y -= g.Style.ItemSpacing.y * 0.5f;
@@ -1035,7 +1059,7 @@ void SlGui::CategoryText(const char* text)
 		min.y + (max.y - min.y) / 2.0f);						// Centered Y
 	ImVec2 lineMax = ImVec2(max.x, lineMin.y + lineWidth);
 	ImRect lineRect(lineMin, lineMax);
-	ImGui::RenderFrame(lineRect, ImGradient(ImVec4(1, 1, 1, 0.55f), ImVec4(1, 1, 1, 0.1f)), 1, 0, ImGuiAxis_X);
+	RenderHorizontalGradient(lineRect, ImGradient(ImVec4(1, 1, 1, 0.55f), ImVec4(1, 1, 1, 0.1f)));
 }
 
 bool SlGui::Category(const char* label, bool defaultOpen)
@@ -1106,7 +1130,7 @@ bool SlGui::Category(const char* label, bool defaultOpen)
 		textMin.y + (textMax.y - textMin.y) / 2.0f); // Centered Y
 	ImVec2 lineMax = ImVec2(max.x, lineMin.y + lineWidth);
 	ImRect lineRect(lineMin, lineMax);
-	ImGui::RenderFrame(lineRect, ImGradient(ImVec4(1, 1, 1, 0.55f), ImVec4(1, 1, 1, 0.1f)), 1, 0, ImGuiAxis_X);
+	RenderHorizontalGradient(lineRect, ImGradient(ImVec4(1, 1, 1, 0.55f), ImVec4(1, 1, 1, 0.1f)));
 
 	return isOpen;
 }
@@ -1334,7 +1358,7 @@ bool SlGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* l
 
 	// Render
 	const ImU32 text_col = ImGui::GetColorU32(ImGuiCol_Text);
-	ImGuiNavHighlightFlags nav_highlight_flags = ImGuiNavHighlightFlags_TypeThin;
+	ImGuiNavHighlightFlags nav_highlight_flags = ImGuiNavHighlightFlags_Compact;
 	if (display_frame)
 	{
 		// Framed type
@@ -1413,7 +1437,7 @@ bool SlGui::BeginCombo(const char* label, const char* preview_value, ImGuiComboF
 	}
 
 	// Render shape
-	ImGui::RenderShadow(bb);
+	DrawSoftShadow(bb);
 	const ImU32 frame_col = ImGui::GetColorU32(hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
 	const float value_x2 = ImMax(bb.Min.x, bb.Max.x /*- arrow_size*/);
 	ImGui::RenderNavHighlight(bb, id);
@@ -1577,7 +1601,7 @@ bool SlGui::Checkbox(const char* label, bool* v)
 	}
 
 	const ImRect check_bb(pos, pos + ImVec2(square_sz, square_sz));
-	ImGui::RenderShadow(check_bb);
+	DrawSoftShadow(check_bb);
 	ImGui::RenderNavHighlight(total_bb, id);
 	ImGui::RenderFrame(check_bb.Min, check_bb.Max, ImGui::GetColorU32((held && hovered) ? ImGuiCol_FrameBgActive : hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg), true, style.FrameRounding);
 	ImU32 check_col = ImGui::GetColorU32(ImGuiCol_CheckMark);
@@ -1730,7 +1754,7 @@ bool SlGui::GraphTreeNode(ConstString text, bool& selected, bool& toggled, SlGui
 		window->DrawList->AddRectFilled(bb.Min, bb.Max, backgroundCol);
 		window->DrawList->AddRect(bb.Min, bb.Max, borderCol);
 	}
-	ImGui::RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin);
+	ImGui::RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_Compact);
 
 	// Arrow, we add slow fading in/out just like in windows explorer
 	if (canOpen)

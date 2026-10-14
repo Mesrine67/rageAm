@@ -31,7 +31,9 @@ namespace rage
 			// Resource is being compiled...
 			// Note that we used size here instead of capacity,
 			// we don't want extra unused memory to be in resource.
-			pAllocator->AllocateRefArray(*ppItems, capacity);
+			void* block = pAllocator->Allocate(static_cast<u32>(sizeof(T) * capacity));
+			*ppItems = static_cast<T*>(block);
+			pAllocator->AddRef(reinterpret_cast<void**>(ppItems), static_cast<pVoid>(*ppItems), "pgArray");
 		}
 
 		static void Free(T* pItems)
@@ -48,7 +50,7 @@ namespace rage
 	template<typename T>
 	void pgSnapshotArray(T* items, u16 size)
 	{
-		if constexpr (pgCanDeserialize<T>)
+		if constexpr (std::is_pointer_v<T>)
 		{
 			pgSnapshotAllocator* pAllocator = pgRscCompiler::GetVirtualAllocator();
 			if (!pAllocator)
@@ -64,7 +66,7 @@ namespace rage
 				pVoid where = pAllocator->Allocate(sizeof(T));
 				item = new (where) T(std::move(item));
 
-				pAllocator->AddRef(item);
+				pAllocator->AddRef(reinterpret_cast<void**>(&item), static_cast<pVoid>(item), "pgArray item");
 			}
 		}
 	}
@@ -73,13 +75,22 @@ namespace rage
 	template<typename T>
 	void pgPlaceArray(const datResource& rsc, T*& items, u16 size, bool placeItems)
 	{
-		rsc.Fixup(items);
+		if (items)
+		{
+			const u64 oldAddress = reinterpret_cast<u64>(items);
+			items = reinterpret_cast<T*>(oldAddress + rsc.GetFixup(oldAddress));
+		}
 
 		// Raw pointers must be used for testing only!
 		if constexpr (std::is_pointer<T>())
 		{
 			for (u16 i = 0; i < size; i++)
-				rsc.Fixup(items[i]);
+			{
+				if (!items[i])
+					continue;
+				const u64 oldAddress = reinterpret_cast<u64>(items[i]);
+				items[i] = reinterpret_cast<T>(oldAddress + rsc.GetFixup(oldAddress));
+			}
 		}
 
 		if (!placeItems)
@@ -92,7 +103,10 @@ namespace rage
 				// We don't have to fixup structs, only place (construct)
 				// Special case is pgPtr / pgUPtr and they have fix-up inside them, as it should be
 				T* pItem = &items[i];
-				rsc.Place(pItem);
+				if constexpr (requires(T t, datResource resource) { T::Place(resource, &t); })
+					T::Place(rsc, pItem);
+				else
+					::new (static_cast<void*>(pItem)) T(rsc);
 			}
 		}
 	}
@@ -117,13 +131,14 @@ namespace rage
 
 		pgArray(const pgArray& other) : Array(other)
 		{
-			pgSnapshotArray(Array::m_Items, Array::m_Size);
+			if constexpr (std::is_pointer_v<T>)
+				pgSnapshotArray<T>(this->m_Items, static_cast<u16>(this->m_Size));
 
 			if (pgRscCompiler::GetCurrent())
 			{
 				// NOTE: We clamp capacity to size because tools like CodeWalker use it instead of
 				// size and crash with null reference exception
-				Array::m_Capacity = Array::m_Size;
+				this->m_Capacity = this->m_Size;
 			}
 		}
 

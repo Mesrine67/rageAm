@@ -1,7 +1,5 @@
 #include "extensions.h"
 
-#include <imgui_gradient.h>
-
 #include "imglue.h"
 #include "imgui_internal.h"
 #include "implot.h"
@@ -163,7 +161,7 @@ bool ImGui::RenamingSelectable(RenamingSelectableState& state, ImGuiRenamingSele
 		SetNextItemAllowOverlap();
 
 		// We don't need navigation highlight because we consider navigation as selection
-		// RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin | ImGuiNavHighlightFlags_NoRounding);
+		// RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_Compact | ImGuiNavHighlightFlags_NoRounding);
 
 		if (flags & ImGuiRenamingSelectableFlags_Outline)
 		{
@@ -502,11 +500,11 @@ bool ImGui::IconTreeNode(ConstString text, bool& selected, bool& toggled, ImText
 		PushStyleVar(ImGuiStyleVar_FrameRounding, 0);
 		PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
 		PushStyleColor(ImGuiCol_Border, 0);
-		RenderFrameGradient(frameBb, col1, col2);
+		window->DrawList->AddRectFilledMultiColor(frameBb.Min, frameBb.Max, col1, col2, col2, col1);
 		PopStyleColor();
 		PopStyleVar(2);
 	}
-	RenderNavHighlight(frameBb, id, ImGuiNavHighlightFlags_TypeThin);
+	RenderNavHighlight(frameBb, id, ImGuiNavHighlightFlags_Compact);
 
 	// Arrow, we add slow fading in/out just like in windows explorer
 	if (canOpen)
@@ -786,7 +784,7 @@ bool ImGui::NavButton(ConstString idStr, ImGuiDir dir, bool enabled)
 	else if (hovered)	col = ImGuiCol_NavHighlight;
 
 	window->DrawList->AddText(textPos, GetColorU32(col), text);
-	RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_TypeThin);
+	RenderNavHighlight(bb, id, ImGuiNavHighlightFlags_Compact);
 
 	if (!enabled) EndDisabled();
 
@@ -930,11 +928,11 @@ bool ImGui::BeginDragDropSource2(ImGuiDragDropFlags flags)
 			// Target can request the Source to not display its tooltip (we use a dedicated flag to make this request explicit)
 			// We unfortunately can't just modify the source flags and skip the call to BeginTooltip, as caller may be emitting contents.
 			bool ret = BeginTooltip();
-			IM_ASSERT(ret); // FIXME-NEWBEGIN: If this ever becomes false, we need to Begin("##Hidden", NULL, ImGuiWindowFlags_NoSavedSettings) + SetWindowHiddendAndSkipItemsForCurrentFrame().
+			IM_ASSERT(ret); // FIXME-NEWBEGIN: If this ever becomes false, begin a hidden window and skip its items.
 			IM_UNUSED(ret);
 
 			if (g.DragDropAcceptIdPrev && (g.DragDropAcceptFlags & ImGuiDragDropFlags_AcceptNoPreviewTooltip))
-				SetWindowHiddendAndSkipItemsForCurrentFrame(g.CurrentWindow);
+				SetWindowHiddenAndSkipItemsForCurrentFrame(g.CurrentWindow);
 		}
 
 		if (!(flags & ImGuiDragDropFlags_SourceNoDisableHover) && !(flags & ImGuiDragDropFlags_SourceExtern))

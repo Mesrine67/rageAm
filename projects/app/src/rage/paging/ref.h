@@ -60,7 +60,7 @@ namespace rage
 			if constexpr (hasSnapshotFn)
 			{
 				m_Pointer = static_cast<T*>(T::Snapshot(allocator, other.m_Pointer));
-				allocator->AddRef(m_Pointer);
+				allocator->AddRef(reinterpret_cast<void**>(&m_Pointer), static_cast<pVoid>(m_Pointer), "pgPtr snapshot");
 			}
 			else if constexpr (std::is_abstract_v<T>)
 			{
@@ -224,7 +224,9 @@ namespace rage
 
 		pgPtr& operator=(pgPtr&& other) noexcept
 		{
-			std::swap(this->m_Pointer, other.m_Pointer);
+			T* pointer = this->m_Pointer;
+			this->m_Pointer = other.m_Pointer;
+			other.m_Pointer = pointer;
 			return *this;
 		}
 
@@ -335,7 +337,7 @@ namespace rage
 		{
 			AM_ASSERTS(!this->m_Pointer);
 
-			size_t allocSize = sizeof T_ * elementCount;
+			size_t allocSize = sizeof(T_) * elementCount;
 			if constexpr (std::is_array_v<T>)
 			{
 				allocSize += 16; // Extra space for count (CppArray)

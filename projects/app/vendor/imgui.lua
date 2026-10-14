@@ -1,9 +1,8 @@
-vendor_files "slgui/" {
+vendor_files "imgui/" {
+	"LICENSE.txt",
 	"imconfig.h",
 	"imgui.cpp",
-	"imgui.h",	
-	"imgui_gradient.h",
-	"imgui_gradient.cpp",
+	"imgui.h",
 	"imgui_demo.cpp",
 	"imgui_draw.cpp",
 	"imgui_internal.h",

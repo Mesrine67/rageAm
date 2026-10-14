@@ -38,7 +38,7 @@ namespace rageam
 			// ReSharper disable once CppUninitializedNonStaticDataMember
 			T Value;
 
-			Holder() { memset(this, 0, sizeof Holder); }
+			Holder() { memset(this, 0, sizeof(Holder)); }
 			~Holder() { /* Destroy called by nullable only if there's value */ }
 
 			void Destroy()

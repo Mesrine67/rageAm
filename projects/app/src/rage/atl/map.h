@@ -123,15 +123,15 @@ namespace rage
 		Node* AllocateNode()
 		{
 			// Allocate without invoking default TValue constructor
-			Node* node = static_cast<Node*>(pgAlloc(sizeof Node));
-			memset(node, 0, sizeof Node);
+			Node* node = static_cast<Node*>(pgAlloc(sizeof(Node)));
+			memset(node, 0, sizeof(Node));
 			return node;
 		}
 
 		void DeleteNode(Node* node)
 		{
 			node->Value.~TValue();
-			memset(node, 0, sizeof Node);
+			memset(node, 0, sizeof(Node));
 
 			// Delete without invoking TValue destructor, because otherwise destructor will be called for 
 			// item that wasn't even constructed

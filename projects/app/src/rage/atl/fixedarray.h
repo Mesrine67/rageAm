@@ -197,7 +197,7 @@ namespace rage
 			{
 				T* dst = m_Items + index;
 				T* src = dst + 1;
-				u32 size = (m_Size - (index + 1)) * sizeof T;
+				u32 size = (m_Size - (index + 1)) * sizeof(T);
 
 				memmove(dst, src, size);
 			}
@@ -349,7 +349,7 @@ namespace rage
 				"Most likely array was resized and pointer became invalid.",
 				pItem, begin(), end());
 
-			return (pItem - m_Items) / sizeof T;
+			return (pItem - m_Items) / sizeof(T);
 		}
 
 		/**

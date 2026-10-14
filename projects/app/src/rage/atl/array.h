@@ -33,7 +33,7 @@ namespace rage
 			// By default, C++ invoke constructor and destructor on new/delete for every item
 			// of the array, we pre-allocate memory without constructing items, so we have
 			// to delete them without destructing too, casting to void* does the job
-			*ppItems = static_cast<T*>(operator new[](capacity * sizeof T));
+			*ppItems = static_cast<T*>(operator new[](capacity * sizeof(T)));
 		}
 
 		static void Free(T* pItems)
@@ -372,7 +372,7 @@ namespace rage
 			{
 				T* dst = m_Items + index;
 				T* src = dst + 1;
-				u32 size = (m_Size - (index + 1)) * sizeof T;
+				u32 size = (m_Size - (index + 1)) * sizeof(T);
 
 				memmove(dst, src, size);
 			}
@@ -576,7 +576,7 @@ namespace rage
 				"Most likely array was resized and pointer became invalid.",
 				pItem, begin(), end());
 
-			return (pItem - m_Items) / sizeof T;
+			return (pItem - m_Items) / sizeof(T);
 		}
 
 		/**

@@ -221,7 +221,7 @@ project "rageAm"
 	include_vendors { "zlib-ng" };
 	
 	include_vendors {
-		"slgui", -- ImGui
+		"imgui",
 		"implot",
 		"tinyxml2",
 		"minhook",

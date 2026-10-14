@@ -121,32 +121,35 @@ namespace rage
 		 * \param block	Structure field.
 		 * \remarks See ::FixupBlockReferences for more info.
 		 */
-		template<typename T>
-		void AddRef(T*& block)
+		void AddRef(void** ref, pVoid block, const char* typeName)
 		{
 			AM_ASSERT(block != nullptr, "SnapshotAllocator::AddRef() -> Block was NULL");
 
-			void** ref = (void**)&block; // NOLINT(clang-diagnostic-cast-qual)
-
-			Node* node = GetNodeFromBlock((pVoid)block);
+			Node* node = GetNodeFromBlock(block);
 			if (node)
 			{
 				node->Refs.Add(ref);
-				AM_DEBUGF("SnapshotAllocator::AddRef<%s>() -> %#llx", typeid(T).name(), (u64)block);
+				AM_DEBUGF("SnapshotAllocator::AddRef<%s>() -> %#llx", typeName, (u64)block);
 				return;
 			}
 
 			// Check for a possible 'Offset Ref' (see description above)
-			node = FindBlockThatContainsPointer((pVoid)block);
+			node = FindBlockThatContainsPointer(block);
 			if (node)
 			{
-				u32 offset = DISTANCE(node->GetBlock(), block);
+				u32 offset = static_cast<u32>(reinterpret_cast<const char*>(block) - node->GetBlock());
 				node->OffsetRefs.Add(Node::OffsetRef(ref, offset));
-				AM_DEBUGF("SnapshotAllocator::AddRef<%s>() -> %#llx with offset %u", typeid(T).name(), (u64)block, offset);
+				AM_DEBUGF("SnapshotAllocator::AddRef<%s>() -> %#llx with offset %u", typeName, (u64)block, offset);
 				return;
 			}
 
 			AM_ASSERT(node, "SnapshotAllocator::AddRef() -> Pointer is neither allocation nor within any of allocated blocks.");
+		}
+
+		template<typename T>
+		void AddRef(T*& block)
+		{
+			this->AddRef(reinterpret_cast<void**>(&block), static_cast<pVoid>(block), typeid(T).name());
 		}
 
 		/**
@@ -159,7 +162,7 @@ namespace rage
 		{
 			void* p = Allocate(size);
 			block = static_cast<T*>(p);
-			AddRef(block);
+			this->AddRef(reinterpret_cast<void**>(&block), static_cast<pVoid>(block), typeid(T).name());
 		}
 
 		/**
@@ -171,7 +174,9 @@ namespace rage
 		template<typename T>
 		void AllocateRefArray(T*& tRef, u32 count, u32 size = sizeof(T))
 		{
-			AllocateRef(tRef, size * count);
+			void* block = Allocate(size * count);
+			tRef = static_cast<T*>(block);
+			this->AddRef(reinterpret_cast<void**>(&tRef), static_cast<pVoid>(tRef), typeid(T).name());
 		}
 	};
 }

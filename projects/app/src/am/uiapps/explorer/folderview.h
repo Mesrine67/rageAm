@@ -9,6 +9,7 @@
 
 #include "entry.h"
 #include "entryselection.h"
+#include "imgui_internal.h"
 #include "am/ui/slwidgets.h"
 #include "rage/file/watcher.h"
 #include "quicklook.h"

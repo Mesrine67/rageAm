@@ -188,7 +188,7 @@ namespace rage
 	class fwPool : public fwBasePool
 	{
 	public:
-		fwPool() : fwBasePool(sizeof T) {}
+		fwPool() : fwBasePool(sizeof(T)) {}
 
 		T* NewAt(fwGuid id)
 		{
