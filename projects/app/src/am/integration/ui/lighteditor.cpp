@@ -1,6 +1,7 @@
 #ifdef AM_INTEGRATED
 
 #include "lighteditor.h"
+#include "stb_sprintf.h"
 #include "modelscene.h"
 #include "game/viewport.h"
 #include "rage/math/math.h"

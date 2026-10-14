@@ -1,5 +1,9 @@
 // ReSharper disable CppUnusedIncludeDirective
 
+#if defined(AM_INTEGRATED) && defined(APP_BUILD_3889_0)
+#error "GTA V Legacy 1.0.3889.0 integration failed at runtime; refusing to build an injectable DLL."
+#endif
+
 #include "rage/system/new.h"
 
 #include "am/manifest.h"

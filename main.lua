@@ -106,6 +106,10 @@ project "Launcher"
 	}
 
 function setup_game_build_version()
+	if _OPTIONS["gamebuild"] == "3889_0" then
+		error("GTA V Legacy 1.0.3889.0 is not supported: runtime integration failed; refusing an injectable build.")
+	end
+
 	-- 2699.16 Release (Built from source code)
 	filter { "options:gamebuild=2699_16_RELEASE_NO_OPT" }
 		defines { "APP_BUILD_ID=1" }

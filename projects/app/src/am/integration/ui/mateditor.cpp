@@ -1430,13 +1430,12 @@ void rageam::integration::MaterialEditor::DrawPhysicsOptions() const
 			if (isCategorySelected)
 			{
 				ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(75, 165, 255, 255));
-				ImGui::PushStyleColor(ImGuiCol_Decoration, IM_COL32(75, 165, 255, 255));
 				ImGui::PushFont(ImFont_Medium);
 			}
 			bool openedCategory = !hasCategory || ImGui::BeginMenu(materialCategory.DisplayName);
 			if (isCategorySelected)
 			{
-				ImGui::PopStyleColor(2);
+				ImGui::PopStyleColor();
 				ImGui::PopFont();
 				// For some reason ImGui resets font stack on opening new menu, we have
 				// to push regular font and pop it later, otherwise it will crash on drawing font in menu item
